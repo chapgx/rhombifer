@@ -53,7 +53,8 @@ func runRoot(args ...string) error {
 
 	if len(args) > 0 {
 		foundFlags, err := parsing.FlagsLookup(root.Flags, args...)
-		if err != nil && err != parsing.ErrFlagsNilOrEmpty {
+		//HACK: avoiding carhsing on unrecognized flags to utilize folloing values
+		if err != nil && err != parsing.ErrFlagsNilOrEmpty && err != parsing.ErrUnrecognizedFlag {
 			return err
 		}
 		ff = &foundFlags
