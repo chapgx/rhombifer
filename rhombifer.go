@@ -58,7 +58,8 @@ func runRoot(args ...string) error {
 		}
 		ff = &foundFlags
 	}
-	return nil
+
+	return root.Run(args...)
 }
 
 //todo: this function will probably need to be refactor for better usability
@@ -70,6 +71,7 @@ func ExecCommand(cmd string, args ...string) error {
 		return fmt.Errorf("Expected root command to be set found %v", root)
 	}
 
+	//TODO: this needs to allow root to run without flags and passed values
 	if len(args) == 0 && cmd == "" || (cmd == "" && IsFirstArgFlag(args[0])) {
 		return runRoot(args...)
 	}
@@ -112,6 +114,7 @@ func ExecCommand(cmd string, args ...string) error {
 			return err
 		}
 		if !rawsOnly {
+			//BUG: flags lookup is failing to identify short format flags
 			foundFlags, err := parsing.FlagsLookup(subcommand.Flags, args...)
 			if err != nil {
 				return err
