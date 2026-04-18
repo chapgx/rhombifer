@@ -1,3 +1,4 @@
+// Package lexer handles lexical analysis
 package lexer
 
 import (
@@ -6,9 +7,11 @@ import (
 
 type Lexer struct {
 	input        string
+	shorttokens  string
+	shortidx     int
 	position     int  // current position in input (points to the current char)
 	readPosition int  // current reading position in input (after current char)
-	ch           byte // current char under examination
+	char         byte // current char under examination
 }
 
 func New(input string) *Lexer {
@@ -17,11 +20,12 @@ func New(input string) *Lexer {
 	return l
 }
 
+// readChar reads the next character
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
-		l.ch = 0
+		l.char = 0
 	} else {
-		l.ch = l.input[l.readPosition]
+		l.char = l.input[l.readPosition]
 	}
 	l.position = l.readPosition
 	l.readPosition += 1
@@ -32,26 +36,20 @@ func (l *Lexer) NextToken() tokens.Token {
 
 	l.skipWhiteSpace()
 
-	switch l.ch {
+	switch l.char {
 	case '-':
-		if l.peekChar() == '-' {
-			ch := l.ch
-			l.readChar()
-			literal := string(ch) + string(l.ch)
-			tok = tokens.Token{Type: tokens.DOUBLE_DASH, Literal: literal}
-		} else {
-			tok = newToken(tokens.DASH, l.ch)
-		}
+		tok = tokens.TokenFromType(tokens.DASH)
+	case '"':
+		tok = tokens.TokenFromType(tokens.QUOTE)
 	case 0:
-		tok.Literal = ""
-		tok.Type = tokens.EOF
+		tok = tokens.TokenFromType(tokens.EOF)
 	default:
-		if isLetter(l.ch) {
-			tok.Literal = l.readIdentifier()
-			tok.Type = tokens.IDENT
+		if isLetter(l.char) {
+			ident := l.readIdentifier()
+			tok = tokens.TokenFromIdent(ident)
 			return tok
 		} else {
-			tok = newToken(tokens.ILLEGAL, l.ch)
+			tok = tokens.TokenFromType(tokens.ILLEGAL)
 		}
 	}
 
@@ -59,30 +57,29 @@ func (l *Lexer) NextToken() tokens.Token {
 	return tok
 }
 
+// readIdentifier reads and identifier
 func (l *Lexer) readIdentifier() string {
 	position := l.position
-	for isLetter(l.ch) {
+	for isLetter(l.char) {
 		l.readChar()
 	}
 	return l.input[position:l.position]
 }
 
 func (l *Lexer) skipWhiteSpace() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+	for l.char == ' ' || l.char == '\t' || l.char == '\n' || l.char == '\r' {
 		l.readChar()
 	}
 }
 
+// isLetter checks if ch is a letter
 func isLetter(ch byte) bool {
-	//NOTE: TAKE A SECOND LOOK AT THE BELOW CLASIFICATION
+	// NOTE: TAKE A SECOND LOOK AT THE BELOW CLASIFICATION
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '.' || ch == ',' || ch == ';' || ch == '-'
 }
 
-func newToken(tokenType tokens.TokenType, ch byte) tokens.Token {
-	return tokens.Token{Type: tokenType, Literal: string(ch)}
-}
-
-func (l *Lexer) peekChar() byte {
+// peekchar looks at the next character in the input
+func (l *Lexer) peekchar() byte {
 	if l.readPosition >= len(l.input) {
 		return 0
 	} else {
