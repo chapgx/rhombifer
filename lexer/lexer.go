@@ -43,6 +43,7 @@ func (l *Lexer) NextToken() tokens.Token {
 		tok = tokens.TokenFromType(tokens.QUOTE)
 	case 0:
 		tok = tokens.TokenFromType(tokens.EOF)
+		return tok
 	default:
 		if isLetter(l.char) {
 			ident := l.readIdentifier()
@@ -74,7 +75,7 @@ func (l *Lexer) skipWhiteSpace() {
 
 // isLetter checks if ch is a letter
 func isLetter(ch byte) bool {
-	// NOTE: TAKE A SECOND LOOK AT THE BELOW CLASIFICATION
+	// NOTE: this may need to grow
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '.' || ch == ',' || ch == ';' || ch == '-'
 }
 

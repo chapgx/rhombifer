@@ -1,77 +1,64 @@
-// Package ast handlers the asbtrat syntax tree
+// Package ast
 package ast
 
-import (
-	"fmt"
+import "github.com/racg0092/rhombifer/tokens"
 
-	"github.com/racg0092/rhombifer/tokens"
-)
-
-type Statement interface {
-	// TokenLiteral returns the literal token
-	TokenLiteral() string
-	// TokenType returns the token type
-	TokenType() tokens.Type
+type Node interface {
+	GetTokenLiteral() string
+	IsNil() bool
 }
-
-type Identifier struct {
-	Token tokens.Token
-	Value string
-}
-
-func (i Identifier) TokenLiteral() string   { return i.Token.Literal }
-func (i Identifier) TokenType() tokens.Type { return i.Token.Type }
 
 type Command struct {
-	Token tokens.Token
-	Name  string
-	Value []Statement
+	Token      tokens.Token
+	Name       string
+	SubCommand Node
+	Flags      []Flag
+	Values     []Value
 }
 
-func (c Command) TokenLiteral() string   { return c.Token.Literal }
-func (c Command) TokenType() tokens.Type { return c.Token.Type }
+func (c *Command) IsNil() bool {
+	return c.Token.IsNil() && c.Name == "" && c.SubCommand == nil && c.Flags == nil
+}
+
+func (c *Command) GetTokenLiteral() string { return c.Token.Literal }
 
 type Flag struct {
 	Token tokens.Token
 	Name  string
-	Value []Statement
+	Value []string
 }
 
-func (f Flag) TokenLiteral() string   { return f.Token.Literal }
-func (f Flag) TokenType() tokens.Type { return f.Token.Type }
-
-type ShortFLag struct {
-	Token tokens.Token
-	Name  string
+func (f *Flag) IsNil() bool {
+	return f.Token.IsNil() && f.Name == "" && f.Value == nil
 }
 
-func (sf ShortFLag) TokenLiteral() string   { return sf.Token.Literal }
-func (sf ShortFLag) TokenType() tokens.Type { return sf.Token.Type }
-
-type Program struct {
-	Tree []Statement
-}
-
-// PrintAST prints the AST into the standard output
-func PrintAST(ident int, nodes ...Statement) {
-	tab := ""
-	for i := 0; i < ident; i += 1 {
-		tab += "\t"
+func (f *Flag) Equals(x *Flag) bool {
+	if !f.Token.Equals(&x.Token) || f.Name != x.Name {
+		return false
 	}
 
-	for _, node := range nodes {
-		switch t := node.(type) {
-		case Command:
-			fmt.Printf("%scommand => %s", tab, t.Name)
-			if len(t.Value) <= 0 {
-				break
-			}
-			ident := ident
-			ident += 1
-			PrintAST(ident, t.Value...)
-		case Flag:
-		case Identifier:
-		case ShortFLag:
+	for index, v := range f.Value {
+		if v != x.Value[index] {
+			return false
 		}
 	}
+
+	return true
+}
+
+func (f *Flag) GetTokenLiteral() string { return f.Token.Literal }
+
+type Value struct {
+	Token   tokens.Token
+	Content string
+}
+
+func (v *Value) IsNil() bool             { return v.Content == "" }
+func (v *Value) GetTokenLiteral() string { return v.Token.Literal }
+
+type Program struct {
+	// The root of the cli command expression. This can be a subcommand of root,
+	// flags and/or values passed directly at the root command
+	Root   []Node
+	Errors []error
 }
