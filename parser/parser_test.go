@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/racg0092/rhombifer/ast"
-	"github.com/racg0092/rhombifer/lexer"
-	"github.com/racg0092/rhombifer/tokens"
+	"github.com/chapgx/rhombifer/ast"
+	"github.com/chapgx/rhombifer/lexer"
+	"github.com/chapgx/rhombifer/tokens"
 )
 
 func TestParser(t *testing.T) {

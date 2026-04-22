@@ -1,7 +1,7 @@
 // Package ast
 package ast
 
-import "github.com/racg0092/rhombifer/tokens"
+import "github.com/chapgx/rhombifer/tokens"
 
 type Node interface {
 	GetTokenLiteral() string

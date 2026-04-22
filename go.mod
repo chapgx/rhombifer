@@ -1,3 +1,3 @@
-module github.com/racg0092/rhombifer
+module github.com/chapgx/rhombifer
 
 go 1.22.0

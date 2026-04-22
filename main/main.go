@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/racg0092/rhombifer/repl"
 	"os"
 	"os/user"
+
+	"github.com/chapgx/rhombifer/repl"
 )
 
 func main() {

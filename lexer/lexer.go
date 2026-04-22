@@ -2,7 +2,7 @@
 package lexer
 
 import (
-	"github.com/racg0092/rhombifer/tokens"
+	"github.com/chapgx/rhombifer/tokens"
 )
 
 type Lexer struct {

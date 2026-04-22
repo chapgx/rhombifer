@@ -1,6 +1,6 @@
 package rhombifer
 
-import "github.com/racg0092/rhombifer/pkg/errs"
+import "github.com/chapgx/rhombifer/pkg/errs"
 
 var (
 	ErroNoRootRunFunc = errs.NewError("root has no Run function. Therefore it can't interpret any flags.")

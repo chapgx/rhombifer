@@ -3,7 +3,7 @@ package lexer
 import (
 	"testing"
 
-	"github.com/racg0092/rhombifer/tokens"
+	"github.com/chapgx/rhombifer/tokens"
 )
 
 func TestLexer(t *testing.T) {

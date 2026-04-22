@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	rhombi "github.com/racg0092/rhombifer"
-	"github.com/racg0092/rhombifer/tokens"
+	rhombi "github.com/chapgx/rhombifer"
+	"github.com/chapgx/rhombifer/tokens"
 )
 
 func TestRootAndExe(t *testing.T) {

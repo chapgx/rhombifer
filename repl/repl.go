@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/racg0092/rhombifer/lexer"
-	"github.com/racg0092/rhombifer/tokens"
+	"github.com/chapgx/rhombifer/lexer"
+	"github.com/chapgx/rhombifer/tokens"
 )
 
 const PROMPT = ">> "

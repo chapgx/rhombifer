@@ -3,7 +3,7 @@ package tests
 import (
 	"strings"
 
-	rhombi "github.com/racg0092/rhombifer"
+	rhombi "github.com/chapgx/rhombifer"
 )
 
 // Sample user input

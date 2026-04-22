@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	text "github.com/racg0092/rhombifer/pkg/text"
+	text "github.com/chapgx/rhombifer/pkg/text"
 )
 
 // HelpCommand a default built in `help` command.
