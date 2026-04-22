@@ -41,7 +41,7 @@ func FugazziFlags(cmd *rhombifer.Command) {
 
 func OsArgs(expand string) []string {
 	program := "myprg"
-	if "" != expand {
+	if expand != "" {
 		program = program + " " + expand
 	}
 	program = strings.ReplaceAll(program, "  ", " ")
@@ -51,8 +51,8 @@ func OsArgs(expand string) []string {
 func TestHelpWithValue(t *testing.T) {
 	os.Args = OsArgs("help rcmd")
 	root := rhombifer.Root()
-	help := HelpCommand(nil, nil)
-	root.AddSub(&help)
+	help := HelpCommand()
+	root.AddSubs(&help)
 	rcmd := FuggazziSubs()[0]
 	FugazziFlags(&rcmd)
 	root.Subs["rcmd"] = &rcmd
@@ -67,8 +67,8 @@ func ExampleHelpCommand() {
 	// creates root command
 	root := rhombifer.Root()
 	// add built in. can be added to any command
-	help := HelpCommand(nil, nil)
-	root.AddSub(&help)
+	help := HelpCommand()
+	root.AddSubs(&help)
 	// run help command
 	root.Subs["help"].Run()
 }

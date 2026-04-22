@@ -1,9 +1,10 @@
 package tests
 
 import (
+	"strings"
+
 	rhombi "github.com/racg0092/rhombifer"
 	"github.com/racg0092/rhombifer/pkg/models"
-	"strings"
 )
 
 // Sample user input

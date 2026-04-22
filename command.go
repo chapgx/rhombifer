@@ -2,11 +2,9 @@ package rhombifer
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/racg0092/rhombifer/pkg/models"
-	"github.com/racg0092/rhombifer/pkg/parsing"
 	"github.com/racg0092/rhombifer/tokens"
 )
 
@@ -58,18 +56,6 @@ func (cmd *Command) AddFlags(flags ...*models.Flag) {
 		cmd.Flags = append(cmd.Flags, f)
 		tokens.RegisterFlag(f.Name)
 	}
-}
-
-// AddSub adds a sub command to a command
-func (cmd *Command) AddSub(command *Command) {
-	if cmd == nil {
-		panic("attempting to set sub command to a nil reference")
-	}
-	if cmd.Subs == nil {
-		cmd.Subs = make(map[string]*Command)
-	}
-	cmd.Subs[command.Name] = command
-	tokens.RegisterCommand(command.Name)
 }
 
 // AddSubs adds subs commands to the command
@@ -141,42 +127,3 @@ var (
 	ErrNoASubCommand = errors.New("invalid command format")
 	ErrNoSubCommands = errors.New("no subcommands to look through")
 )
-
-// DigThroughSubCommand checks user input looking for sub commands until the last one is found
-func DigThroughSubCommand(subcommands map[string]*Command, args []string) (*Command, []string, error) {
-	// TODO: Throughout test this logic
-	if len(subcommands) <= 0 {
-		return nil, args, ErrNoSubCommands
-	}
-
-	if len(args) <= 0 {
-		return nil, args, ErrNoSubCommandPassed
-	}
-
-	sub := args[0]
-
-	validsubcommand := parsing.ValidSubCommand(sub)
-
-	if !validsubcommand {
-		return nil, args, ErrNoASubCommand
-	}
-
-	nargs := args[1:]
-
-	cmd, exists := subcommands[sub]
-	if !exists {
-		return nil, args, fmt.Errorf("command %s not found", sub)
-	}
-
-	if len(nargs) == 0 {
-		return cmd, nargs, nil
-	}
-
-	validsubcommand = parsing.ValidSubCommand(nargs[0])
-
-	if validsubcommand {
-		return DigThroughSubCommand(cmd.Subs, nargs)
-	}
-
-	return cmd, nargs, nil
-}

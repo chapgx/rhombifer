@@ -58,7 +58,6 @@ func Start() error {
 }
 
 func command_path(cmd *ast.Command, rawinput []string) error {
-	root := Root()
 	sub, e := root.CheckSubCommand(cmd.Name)
 	if e != nil {
 		return e

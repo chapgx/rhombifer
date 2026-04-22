@@ -2,11 +2,9 @@
 package rhombifer
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/racg0092/rhombifer/pkg/models"
-	"github.com/racg0092/rhombifer/pkg/parsing"
 )
 
 var root *Command
@@ -40,89 +38,4 @@ func Root() *Command {
 		SetRoot(&c)
 	}
 	return root
-}
-
-// runRoot runs the root command if it has been set and no help command is set as default run
-func runRoot(args ...string) error {
-	root := Root()
-	if root.Run == nil && len(args) > 0 {
-		return ErroNoRootRunFunc
-	} else if root.Run == nil {
-		return nil
-	}
-
-	if len(args) > 0 {
-		foundFlags, err := parsing.FlagsLookup(root.Flags, args...)
-		// HACK: avoiding carhsing on unrecognized flags to utilize folloing values
-		if err != nil && err != parsing.ErrFlagsNilOrEmpty && err != parsing.ErrUnrecognizedFlag {
-			return err
-		}
-		ff = &foundFlags
-	}
-
-	return root.Run(args...)
-}
-
-// todo: this function will probably need to be refactor for better usability
-
-// ExecCommand executes command passed in. It expects [root] to be set
-func ExecCommand(cmd string, args ...string) error {
-	root := Root()
-	if root == nil {
-		return fmt.Errorf("expected root command to be set found %v", root)
-	}
-
-	// TODO: this needs to allow root to run without flags and passed values
-	if len(args) == 0 && cmd == "" || (cmd == "" && IsFirstArgFlag(args[0])) {
-		return runRoot(args...)
-	}
-
-	subcommand, found := root.Subs[cmd]
-	if !found {
-		return fmt.Errorf("Command %s was not found", cmd)
-	}
-
-	childcommand, args, err := DigThroughSubCommand(subcommand.Subs, args)
-
-	// HACK: implemented a new error to avoid failure when no sub command is used
-	// this should be handle different in the future. Added ignore error to allow parent command
-	// to be run with flags
-	if err != nil && err != ErrNoSubCommands && err != ErrNoSubCommandPassed && err != ErrNoASubCommand {
-		return err
-	}
-
-	if childcommand != nil {
-		subcommand = childcommand
-	}
-
-	if subcommand.Run == nil {
-		return fmt.Errorf("sub command %s, does not have a valid function (Run)", subcommand.Name)
-	}
-
-	if len(subcommand.requiredFlags) > 0 {
-		if len(args) == 0 {
-			return fmt.Errorf("this command (%s) requires flags. Please check the commands docs", subcommand.Name)
-		}
-		valid := subcommand.ValidateRequiredFlags(args)
-		if !valid {
-			return fmt.Errorf("Command [%s] requires the expected flags but found [%v]", subcommand.Name, args)
-		}
-	}
-
-	if len(args) > 0 {
-		rawsOnly, err := parsing.IsRawValuesOnly(args...)
-		if err != nil {
-			return err
-		}
-		if !rawsOnly {
-			// BUG: flags lookup is failing to identify short format flags
-			foundFlags, err := parsing.FlagsLookup(subcommand.Flags, args...)
-			if err != nil {
-				return err
-			}
-			ff = &foundFlags
-		}
-	}
-
-	return subcommand.Run(args...)
 }

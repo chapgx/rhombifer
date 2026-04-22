@@ -14,12 +14,8 @@ import (
 	text "github.com/racg0092/rhombifer/pkg/text"
 )
 
-// Generates a default built in `help` command. It takes an optional `short` and `long`
-// parameters for command descriptions. If non are provided default built in are used.
-//
-//   - `short` default = "help"
-//   - `long` default = "Displays help information"
-func HelpCommand(short, long *string) rhombifer.Command {
+// HelpCommand a default built in `help` command.
+func HelpCommand() rhombifer.Command {
 	help := rhombifer.Command{
 		Name:      "help",
 		ShortDesc: "Displays help information",
@@ -55,14 +51,6 @@ func HelpCommand(short, long *string) rhombifer.Command {
 			}
 			return nil
 		},
-	}
-
-	if short != nil {
-		help.ShortDesc = *short
-	}
-
-	if long != nil {
-		help.LongDesc = *long
 	}
 
 	return help
@@ -102,5 +90,4 @@ func subHelp(cmd *rhombifer.Command) {
 		fmt.Fprintf(w, "\n")
 		w.Flush()
 	}
-
 }
