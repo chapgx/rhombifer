@@ -28,8 +28,7 @@ func Start() error {
 		if e != nil {
 			return e
 		}
-		helpcmd.Run()
-		return nil
+		return helpcmd.Run()
 	}
 
 	input := strings.Join(args, " ")
@@ -63,14 +62,20 @@ func command_path(cmd *ast.Command, rawinput []string) error {
 		return e
 	}
 
-	// note: digs util it find the last subcommad in the chain
-	astcommand := cmd.SubCommand.(*ast.Command)
-	for astcommand != nil {
-		s, e := sub.CheckSubCommand(astcommand.Name)
-		if e != nil {
-			return e
+	if cmd.SubCommand != nil {
+		astcommand := cmd.SubCommand.(*ast.Command)
+		for {
+			s, e := sub.CheckSubCommand(astcommand.Name)
+			if e != nil {
+				return e
+			}
+			sub = s
+
+			if astcommand.SubCommand == nil {
+				break
+			}
+			astcommand = astcommand.SubCommand.(*ast.Command)
 		}
-		sub = s
 	}
 
 	// note: checks for flags and add values from the ast to the actual flag
