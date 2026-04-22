@@ -3,8 +3,6 @@ package rhombifer
 
 import (
 	"sync"
-
-	"github.com/racg0092/rhombifer/pkg/models"
 )
 
 var root *Command
@@ -21,7 +19,7 @@ func SetRoot(cmd *Command) {
 			cmd.Subs = make(map[string]*Command)
 		}
 		if cmd.Flags == nil {
-			cmd.Flags = make([]*models.Flag, 0)
+			cmd.Flags = make([]*Flag, 0)
 		}
 		// for thread safety
 		once.Do(func() {

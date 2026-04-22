@@ -12,7 +12,7 @@ func NewError(s string) *Err {
 	return &Err{s}
 }
 
-// Appends message s to default error message
+// AppendMessage message s to default error message
 func (e *Err) AppendMessage(s string) {
 	e.s = e.s + " " + s
 }

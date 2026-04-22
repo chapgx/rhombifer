@@ -3,13 +3,9 @@ package rhombifer
 import (
 	"fmt"
 	"strings"
-
-	"github.com/racg0092/rhombifer/pkg/models"
 )
 
-//todo: If custom flag definition is implemented this function will need to be change
-
-// Identifies if the argument being passed in is a flag. Returns true if it is and false if it isn't
+// IsFirstArgFlag if the argument being passed in is a flag. Returns true if it is and false if it isn't
 func IsFirstArgFlag(arg string) bool {
 	if strings.HasPrefix(arg, "-") || strings.HasPrefix(arg, "--") {
 		return true
@@ -17,8 +13,8 @@ func IsFirstArgFlag(arg string) bool {
 	return false
 }
 
-// Extract expecified quantity of values from flag
-func ExtractFlagValues(flag *models.Flag, quantity int) ([]string, error) {
+// ExtractFlagValues expecified quantity of values from flag
+func ExtractFlagValues(flag *Flag, quantity int) ([]string, error) {
 	vals := make([]string, 0)
 	if flag == nil {
 		return vals, ErroFlagUndefined
@@ -40,18 +36,18 @@ func ExtractFlagValues(flag *models.Flag, quantity int) ([]string, error) {
 	return vals, nil
 }
 
-// Get found flags for the current executed command
-func GetFlags() (*[]*models.Flag, error) {
-	if ff == nil {
+// GetFlags found flags for the current executed command
+func GetFlags() ([]*Flag, error) {
+	if foundflags == nil {
 		return nil, ErroFoundFlagsIsNil
 	}
-	return ff, nil
+	return foundflags, nil
 }
 
-// Check found flags in the current executed command and returns all flags specified in the aliases
-func FindFlags(aliases ...string) ([]*models.Flag, error) {
-	var flags []*models.Flag
-	if ff == nil {
+// FindFlags found flags in the current executed command and returns all flags specified in the aliases
+func FindFlags(aliases ...string) ([]*Flag, error) {
+	var flags []*Flag
+	if foundflags == nil {
 		return flags, ErroFoundFlagsIsNil
 	}
 
@@ -59,16 +55,12 @@ func FindFlags(aliases ...string) ([]*models.Flag, error) {
 		return flags, fmt.Errorf("no aliases provided")
 	}
 
-	flags = make([]*models.Flag, 0)
+	flags = make([]*Flag, 0)
 
 	for _, alias := range aliases {
-		if strings.HasPrefix(alias, "--") {
-			alias = alias[2:]
-		}
-		if strings.HasPrefix(alias, "-") {
-			alias = alias[1:]
-		}
-		for _, f := range *ff {
+		alias = strings.TrimPrefix(alias, "--")
+		alias = strings.TrimPrefix(alias, "-")
+		for _, f := range foundflags {
 			if f.Name == alias || f.ShortFormat == alias {
 				flags = append(flags, f)
 			}
@@ -77,22 +69,18 @@ func FindFlags(aliases ...string) ([]*models.Flag, error) {
 	return flags, nil
 }
 
-// Checks found flags and returns the first flag that matches any of the aliases provided. Once a flag has been
+// FindFlag found flag and returns the first flag that matches any of the aliases provided. Once a flag has been
 // matched the rest of the aliases are no searched, use [FindFlags] if that is your intent
-func FindFlag(aliases ...string) (*models.Flag, error) {
-	if ff == nil {
+func FindFlag(aliases ...string) (*Flag, error) {
+	if foundflags == nil {
 		return nil, ErroFoundFlagsIsNil
 	}
-	var flag *models.Flag
+	var flag *Flag
 floop:
-	for _, f := range *ff {
+	for _, f := range foundflags {
 		for _, alias := range aliases {
-			if strings.HasPrefix(alias, "--") {
-				alias = alias[2:]
-			}
-			if strings.HasPrefix(alias, "-") {
-				alias = alias[1:]
-			}
+			alias = strings.TrimPrefix(alias, "--")
+			alias = strings.TrimPrefix(alias, "-")
 			if alias == f.Name || alias == f.ShortFormat {
 				flag = f
 				break floop

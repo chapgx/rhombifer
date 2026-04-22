@@ -19,7 +19,7 @@ type Pages struct {
 	length int
 }
 
-// New Pages
+// NewPages
 func NewPages(recordsPerPage int, data []byte) Pages {
 	pages := Pages{}
 	lines := bytes.Split(data, []byte("\n"))

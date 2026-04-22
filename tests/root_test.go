@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	rhombi "github.com/racg0092/rhombifer"
-	"github.com/racg0092/rhombifer/pkg/builtin"
-	"github.com/racg0092/rhombifer/pkg/models"
 	"github.com/racg0092/rhombifer/tokens"
 )
 
@@ -30,7 +28,7 @@ func TestRootAndExe(t *testing.T) {
 	t.Run("running root wiht not values and help as default", func(t *testing.T) {
 		os.Args = mimicOsArgs("")
 		rhombi.GetConfig().RunHelpIfNoInput = true
-		help := builtin.HelpCommand()
+		help := rhombi.HelpCommand()
 		root.AddSubs(&help)
 		if err := rhombi.Start(); err != nil {
 			t.Error(err)
@@ -40,9 +38,9 @@ func TestRootAndExe(t *testing.T) {
 	t.Run("running root with flag", func(t *testing.T) {
 		os.Args = mimicOsArgs("--lol")
 
-		flag := models.Flag{Name: "lol", Short: "Lol command"}
+		flag := rhombi.Flag{Name: "lol", Short: "Lol command"}
 		rhombi.GetConfig().RunHelpIfNoInput = true
-		help := builtin.HelpCommand()
+		help := rhombi.HelpCommand()
 		root.AddSubs(&help)
 		root.AddFlags(&flag)
 		root.Run = func(a ...string) error {
@@ -58,9 +56,9 @@ func TestRootAndExe(t *testing.T) {
 	t.Run("running root with flag and values", func(t *testing.T) {
 		os.Args = mimicOsArgs("-r foo bar")
 
-		flag := models.Flag{Name: "run", ShortFormat: "r"}
+		flag := rhombi.Flag{Name: "run", ShortFormat: "r"}
 		rhombi.GetConfig().RunHelpIfNoInput = true
-		help := builtin.HelpCommand()
+		help := rhombi.HelpCommand()
 		root.AddSubs(&help)
 		root.AddFlags(&flag)
 

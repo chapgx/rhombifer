@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	rhombi "github.com/racg0092/rhombifer"
-	"github.com/racg0092/rhombifer/pkg/models"
 )
 
 // Sample user input
@@ -21,12 +20,12 @@ func mimicOsArgs(params string) []string {
 }
 
 func addSampleFlags(cmd *rhombi.Command) {
-	r := models.Flag{
+	r := rhombi.Flag{
 		Name:        "recursive",
 		ShortFormat: "r",
 		Required:    true,
 	}
-	foo := models.Flag{
+	foo := rhombi.Flag{
 		Name:        "foo",
 		ShortFormat: "f",
 	}

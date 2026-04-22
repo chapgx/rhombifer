@@ -1,8 +1,4 @@
-// Package builtin provide some common commands use by cli applications.
-//
-// The packages should be used if you intend to add some of the builtin commands
-// provided
-package builtin
+package rhombifer
 
 import (
 	"fmt"
@@ -10,13 +6,12 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/racg0092/rhombifer"
 	text "github.com/racg0092/rhombifer/pkg/text"
 )
 
 // HelpCommand a default built in `help` command.
-func HelpCommand() rhombifer.Command {
-	help := rhombifer.Command{
+func HelpCommand() Command {
+	help := Command{
 		Name:      "help",
 		ShortDesc: "Displays help information",
 		LongDesc: `
@@ -24,7 +19,7 @@ func HelpCommand() rhombifer.Command {
 		`,
 		Leaf: true,
 		Run: func(args ...string) error {
-			root := rhombifer.Root()
+			root := Root()
 			if len(args) == 0 {
 				fmt.Printf("\n%s", text.LightGray(strings.ToUpper(root.Name)))
 				if root.LongDesc != "" {
@@ -58,7 +53,7 @@ func HelpCommand() rhombifer.Command {
 
 // HACK: this should be a recursive function
 // Handles help function for sub commands of the root command
-func subHelp(cmd *rhombifer.Command) {
+func subHelp(cmd *Command) {
 	fmt.Print("\n")
 	fmt.Printf("%s\n", strings.ToUpper(string(cmd.Name[0]))+cmd.Name[1:])
 	if cmd.LongDesc != "" {

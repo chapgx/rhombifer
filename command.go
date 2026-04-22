@@ -4,7 +4,6 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/racg0092/rhombifer/pkg/models"
 	"github.com/racg0092/rhombifer/tokens"
 )
 
@@ -21,10 +20,10 @@ type Command struct {
 	LongDesc string
 
 	// flags if any
-	Flags []*models.Flag
+	Flags []*Flag
 
 	// Pointers to required flags if any
-	requiredFlags []*models.Flag
+	requiredFlags []*Flag
 
 	// Sub commands for this command
 	Subs map[string]*Command
@@ -42,11 +41,11 @@ type Command struct {
 }
 
 // AddFlags adds a flag to the a command
-func (cmd *Command) AddFlags(flags ...*models.Flag) {
+func (cmd *Command) AddFlags(flags ...*Flag) {
 	for _, f := range flags {
 		if f.Required {
 			if cmd.requiredFlags == nil {
-				cmd.requiredFlags = make([]*models.Flag, 0)
+				cmd.requiredFlags = make([]*Flag, 0)
 			}
 			cmd.requiredFlags = append(cmd.requiredFlags, f)
 		}
@@ -95,7 +94,7 @@ func (cmd *Command) ValidateRequiredFlags(args []string) bool {
 }
 
 // RequiredFlags get required flags
-func (cmd *Command) RequiredFlags() *[]*models.Flag {
+func (cmd *Command) RequiredFlags() *[]*Flag {
 	return &cmd.requiredFlags
 }
 
@@ -114,7 +113,7 @@ func (cmd *Command) CheckSubCommand(subcmd string) (*Command, error) {
 	return nil, errors.New("command " + subcmd + " not found")
 }
 
-func (cmd *Command) CheckForFlag(name string) *models.Flag {
+func (cmd *Command) CheckForFlag(name string) *Flag {
 	for _, flag := range cmd.Flags {
 		if flag.Name == name || flag.ShortFormat == name {
 			return flag

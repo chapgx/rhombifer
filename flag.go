@@ -1,4 +1,4 @@
-package models
+package rhombifer
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ type Flag struct {
 	// flag name
 	Name string
 
-	//Shot Desctiption
+	// Shot Desctiption
 	Short string
 
 	// Long Description
@@ -22,7 +22,7 @@ type Flag struct {
 	// May remove this and add a require flags to the command itself
 	Required bool
 
-	//todo: not sure if to keep it
+	// todo: not sure if to keep it
 	// to define how the values would be parse
 	ValuesDilimiter []string
 
@@ -68,8 +68,7 @@ func (f Flag) GetSingleValue() (string, error) {
 	return f.Values[0], nil
 }
 
-//TODO: add a validation function for type maybe
-
+// TODO: add a validation function for type maybe
 var (
 	ErrNoValues  = errors.New("no values found on flag")
 	ErrNilValues = errors.New("values is <nil>")
