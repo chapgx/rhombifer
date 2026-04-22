@@ -57,7 +57,7 @@ func IsTokenCommand(literal string) bool {
 
 func IsTokenFlag(literal string) bool {
 	if flags == nil {
-		panic("commands map is nil")
+		panic("flags map is nil")
 	}
 
 	_, ok := flags[literal]

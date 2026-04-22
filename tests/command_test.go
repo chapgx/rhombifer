@@ -9,7 +9,6 @@ import (
 )
 
 func TestFlagValidation(t *testing.T) {
-
 	t.Run("validating short flag required", func(t *testing.T) {
 		osargs := mimicOsArgs("-r")
 		cmd := rhombifer.Command{
@@ -33,7 +32,6 @@ func TestFlagValidation(t *testing.T) {
 			t.Errorf("expected true but got %v", valid)
 		}
 	})
-
 }
 
 func TestSubCommand(t *testing.T) {

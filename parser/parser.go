@@ -32,19 +32,11 @@ func (p *Parser) parse_ident() ast.Node {
 		switch p.currToken.Type {
 		case tokens.IDENT:
 			node := p.parse_ident()
-			switch node.(type) {
+			switch ent := node.(type) {
 			case *ast.Command:
-				// subd, ok := node.(*ast.Command)
-				// if !ok {
-				// 	panic("expected a command got something else")
-				// }
-				command.SubCommand = node
+				command.SubCommand = ent
 			case *ast.Value:
-				val, ok := node.(*ast.Value)
-				if !ok {
-					panic("expectd a value got somethin else")
-				}
-				command.Values = append(command.Values, *val)
+				command.Values = append(command.Values, *ent)
 			}
 		case tokens.DASH:
 			flags := p.parse_dash()
@@ -81,7 +73,6 @@ func (p *Parser) parse_quote() ast.Value {
 		p.nexttoken()
 	}
 
-	p.nexttoken()
 	return value
 }
 
@@ -159,18 +150,19 @@ func (p *Parser) parse_dash() []ast.Flag {
 		panic("expected an identifier got something else")
 	}
 
-	return p.parse_short_flags()
+	p.nexttoken()
+	flag := p.parse_short_flags()
+	p.nexttoken()
+	return flag
 }
 
 func (p *Parser) Parse() ast.Program {
 	prog := ast.Program{Root: make([]ast.Node, 0)}
 
-	for {
+outer:
+	for p.currToken.Type != tokens.EOF {
 
-		if p.currToken.Type == tokens.EOF {
-			break
-		}
-
+		// fmt.Println(p.currToken)
 		var node ast.Node
 
 		switch p.currToken.Type {
@@ -181,13 +173,14 @@ func (p *Parser) Parse() ast.Program {
 			for _, f := range flags {
 				prog.Root = append(prog.Root, &f)
 			}
-			continue
+			continue outer
 		case tokens.QUOTE:
 			val := p.parse_quote()
 			node = &val
 		}
 
 		prog.Root = append(prog.Root, node)
+		p.nexttoken()
 	}
 
 	return prog

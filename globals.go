@@ -29,4 +29,7 @@ func SetConfig(c *Config) {
 }
 
 // A pointer to the found flags for the current command execution
-var ff *[]*models.Flag
+var (
+	ff         *[]*models.Flag // TODO: to be decom
+	foundflags []*models.Flag
+)

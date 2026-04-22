@@ -1,4 +1,4 @@
-// A flexible and simple unopinionated library for cli tools
+// Package rhombifer a flexible and simple unopinionated library for cli tools
 package rhombifer
 
 import (
@@ -13,7 +13,7 @@ var root *Command
 
 var once sync.Once
 
-// Takes in a pointer to `cmd` and sets it as the root command. The **root** command is only set once
+// SetRoot Takes in a pointer to `cmd` and sets it as the root command. The **root** command is only set once
 // for the application runtime. It means that `root` will be set only the first time this funtion is call.
 // Use it if you need to define the `root` command before initialization
 func SetRoot(cmd *Command) {
@@ -32,7 +32,7 @@ func SetRoot(cmd *Command) {
 	}
 }
 
-// Returns root command. If root has not been initialized it creates a new empty [Command]
+// Root returns root command. If root has not been initialized it creates a new empty [Command]
 // and returns the pointer
 func Root() *Command {
 	if root == nil {
@@ -42,7 +42,7 @@ func Root() *Command {
 	return root
 }
 
-// Runs the root command if it has been set and no help command is set as default run
+// runRoot runs the root command if it has been set and no help command is set as default run
 func runRoot(args ...string) error {
 	root := Root()
 	if root.Run == nil && len(args) > 0 {
@@ -53,7 +53,7 @@ func runRoot(args ...string) error {
 
 	if len(args) > 0 {
 		foundFlags, err := parsing.FlagsLookup(root.Flags, args...)
-		//HACK: avoiding carhsing on unrecognized flags to utilize folloing values
+		// HACK: avoiding carhsing on unrecognized flags to utilize folloing values
 		if err != nil && err != parsing.ErrFlagsNilOrEmpty && err != parsing.ErrUnrecognizedFlag {
 			return err
 		}
@@ -63,16 +63,16 @@ func runRoot(args ...string) error {
 	return root.Run(args...)
 }
 
-//todo: this function will probably need to be refactor for better usability
+// todo: this function will probably need to be refactor for better usability
 
-// Executes command passed in. It expects [root] to be set
+// ExecCommand executes command passed in. It expects [root] to be set
 func ExecCommand(cmd string, args ...string) error {
 	root := Root()
 	if root == nil {
-		return fmt.Errorf("Expected root command to be set found %v", root)
+		return fmt.Errorf("expected root command to be set found %v", root)
 	}
 
-	//TODO: this needs to allow root to run without flags and passed values
+	// TODO: this needs to allow root to run without flags and passed values
 	if len(args) == 0 && cmd == "" || (cmd == "" && IsFirstArgFlag(args[0])) {
 		return runRoot(args...)
 	}
@@ -84,7 +84,7 @@ func ExecCommand(cmd string, args ...string) error {
 
 	childcommand, args, err := DigThroughSubCommand(subcommand.Subs, args)
 
-	//HACK: implemented a new error to avoid failure when no sub command is used
+	// HACK: implemented a new error to avoid failure when no sub command is used
 	// this should be handle different in the future. Added ignore error to allow parent command
 	// to be run with flags
 	if err != nil && err != ErrNoSubCommands && err != ErrNoSubCommandPassed && err != ErrNoASubCommand {
@@ -96,12 +96,12 @@ func ExecCommand(cmd string, args ...string) error {
 	}
 
 	if subcommand.Run == nil {
-		return fmt.Errorf("Sub command %s, does not have a valid function (Run)", subcommand.Name)
+		return fmt.Errorf("sub command %s, does not have a valid function (Run)", subcommand.Name)
 	}
 
 	if len(subcommand.requiredFlags) > 0 {
 		if len(args) == 0 {
-			return fmt.Errorf("This command (%s) requires flags. Please check the commands docs", subcommand.Name)
+			return fmt.Errorf("this command (%s) requires flags. Please check the commands docs", subcommand.Name)
 		}
 		valid := subcommand.ValidateRequiredFlags(args)
 		if !valid {
@@ -115,7 +115,7 @@ func ExecCommand(cmd string, args ...string) error {
 			return err
 		}
 		if !rawsOnly {
-			//BUG: flags lookup is failing to identify short format flags
+			// BUG: flags lookup is failing to identify short format flags
 			foundFlags, err := parsing.FlagsLookup(subcommand.Flags, args...)
 			if err != nil {
 				return err

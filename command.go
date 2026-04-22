@@ -7,6 +7,7 @@ import (
 
 	"github.com/racg0092/rhombifer/pkg/models"
 	"github.com/racg0092/rhombifer/pkg/parsing"
+	"github.com/racg0092/rhombifer/tokens"
 )
 
 type Run func(args ...string) error
@@ -38,9 +39,11 @@ type Command struct {
 
 	// Signifies if there are no more commands after this one
 	Leaf bool
+
+	Values []string
 }
 
-// Adds a flag to the a command
+// AddFlags adds a flag to the a command
 func (cmd *Command) AddFlags(flags ...*models.Flag) {
 	for _, f := range flags {
 		if f.Required {
@@ -53,10 +56,11 @@ func (cmd *Command) AddFlags(flags ...*models.Flag) {
 			f.Values = make([]string, 0)
 		}
 		cmd.Flags = append(cmd.Flags, f)
+		tokens.RegisterFlag(f.Name)
 	}
 }
 
-// Adds a sub command to a command
+// AddSub adds a sub command to a command
 func (cmd *Command) AddSub(command *Command) {
 	if cmd == nil {
 		panic("attempting to set sub command to a nil reference")
@@ -65,9 +69,10 @@ func (cmd *Command) AddSub(command *Command) {
 		cmd.Subs = make(map[string]*Command)
 	}
 	cmd.Subs[command.Name] = command
+	tokens.RegisterCommand(command.Name)
 }
 
-// Adds subs commands to the command
+// AddSubs adds subs commands to the command
 func (cmd *Command) AddSubs(subs ...*Command) {
 	if len(subs) > 0 {
 		if cmd.Subs == nil {
@@ -75,11 +80,12 @@ func (cmd *Command) AddSubs(subs ...*Command) {
 		}
 		for _, s := range subs {
 			cmd.Subs[s.Name] = s
+			tokens.RegisterCommand(s.Name)
 		}
 	}
 }
 
-// Validates if required flags are found in the input string. If any required flag is missing it returns false
+// ValidateRequiredFlags validates if required flags are found in the input string. If any required flag is missing it returns false
 // otherwise true. If no flags are required it returns true.
 func (cmd *Command) ValidateRequiredFlags(args []string) bool {
 	if len(cmd.requiredFlags) <= 0 {
@@ -102,19 +108,19 @@ func (cmd *Command) ValidateRequiredFlags(args []string) bool {
 	return !missing
 }
 
-// Get required flags
+// RequiredFlags get required flags
 func (cmd *Command) RequiredFlags() *[]*models.Flag {
 	return &cmd.requiredFlags
 }
 
-// Check if subcommand exists within the command
+// CheckSubCommand check if subcommand exists within the command
 func (cmd *Command) CheckSubCommand(subcmd string) (*Command, error) {
 	if cmd.Subs == nil {
 		return nil, errors.New("no sub sommands set for the command [" + cmd.Name + "]")
 	}
 
 	for _, scmd := range cmd.Subs {
-		if strings.ToLower(scmd.Name) == strings.ToLower(subcmd) {
+		if strings.EqualFold(scmd.Name, subcmd) {
 			return scmd, nil
 		}
 	}
@@ -122,14 +128,23 @@ func (cmd *Command) CheckSubCommand(subcmd string) (*Command, error) {
 	return nil, errors.New("command " + subcmd + " not found")
 }
 
+func (cmd *Command) CheckForFlag(name string) *models.Flag {
+	for _, flag := range cmd.Flags {
+		if flag.Name == name || flag.ShortFormat == name {
+			return flag
+		}
+	}
+	return nil
+}
+
 var (
 	ErrNoASubCommand = errors.New("invalid command format")
 	ErrNoSubCommands = errors.New("no subcommands to look through")
 )
 
-// Checks user input looking for sub commands until the last one is found
+// DigThroughSubCommand checks user input looking for sub commands until the last one is found
 func DigThroughSubCommand(subcommands map[string]*Command, args []string) (*Command, []string, error) {
-	//TODO: Throughout test this logic
+	// TODO: Throughout test this logic
 	if len(subcommands) <= 0 {
 		return nil, args, ErrNoSubCommands
 	}

@@ -20,8 +20,7 @@ func TestParser(t *testing.T) {
 		l := lexer.New(input)
 		pars := New(l)
 
-		expected_program := ast.Program{}
-		expected_program.Root = []ast.Node{
+		expected_tree := []ast.Node{
 			&ast.Flag{
 				Token: tokens.Token{Type: tokens.FLAG, Literal: "foo"},
 				Name:  "foo",
@@ -35,7 +34,7 @@ func TestParser(t *testing.T) {
 
 		program := pars.Parse()
 
-		for index, expected := range expected_program.Root {
+		for index, expected := range expected_tree {
 			got := program.Root[index]
 			if !are_flags_equals(expected, got) {
 				t.Fatalf("\nexpected: %+v\n\ngot: %+v\n\n", expected, got)
@@ -61,6 +60,19 @@ func TestParser(t *testing.T) {
 			if cmd.SubCommand != nil {
 				fmt.Printf("%+v\n", cmd.SubCommand)
 			}
+		}
+	})
+
+	t.Run("short flag", func(t *testing.T) {
+		input := `-r hello world`
+		l := lexer.New(input)
+		pars := New(l)
+
+		program := pars.Parse()
+
+		// TODO: implement a better check that this
+		for _, node := range program.Root {
+			fmt.Printf("%+v\n", node)
 		}
 	})
 }
