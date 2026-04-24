@@ -11,7 +11,7 @@ type Node interface {
 type Command struct {
 	Token      tokens.Token
 	Name       string
-	SubCommand Node
+	SubCommand *Command
 	Flags      []Flag
 	Values     []Value
 }

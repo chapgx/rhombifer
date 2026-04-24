@@ -50,11 +50,10 @@ outer:
 			if c == helpcmd {
 				// HACK: we will dig through subcommands here but i think
 				// this should be hanlde better in the parsing state
-				subcommand_node := entity.SubCommand
-				for subcommand_node != nil {
-					subcommand := subcommand_node.(*ast.Command)
+				subcommand := entity.SubCommand
+				for subcommand != nil {
 					helpcmd.Values = append(helpcmd.Values, subcommand.Name)
-					subcommand_node = subcommand.SubCommand
+					subcommand = subcommand.SubCommand
 				}
 				// NOTE: could check for flags here and maybe print a more targeted help snippet
 				current_cmd = helpcmd
