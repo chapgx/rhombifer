@@ -75,6 +75,10 @@ func TestParser(t *testing.T) {
 			fmt.Printf("%+v\n", node)
 		}
 	})
+
+	t.Run("with command and short flag", func(t *testing.T) {
+		// TODO: implement test
+	})
 }
 
 func print() {

@@ -9,9 +9,11 @@ import (
 	text "github.com/chapgx/rhombifer/pkg/text"
 )
 
+var helpcmd *Command
+
 // HelpCommand a default built in `help` command.
-func HelpCommand() Command {
-	help := Command{
+func HelpCommand() *Command {
+	helpcmd = &Command{
 		Name:      "help",
 		ShortDesc: "Displays help information",
 		LongDesc: `
@@ -19,40 +21,30 @@ func HelpCommand() Command {
 		`,
 		Leaf: true,
 		Run: func(args ...string) error {
-			root := Root()
-			if len(args) == 0 {
-				fmt.Printf("\n%s", text.LightGray(strings.ToUpper(root.Name)))
-				if root.LongDesc != "" {
-					fmt.Printf("%s", root.LongDesc)
-				} else {
-					fmt.Printf("%s", root.ShortDesc)
-				}
-				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-				fmt.Fprintf(w, "\n%v", text.Bold("Commands"))
-				for _, sub := range root.Subs {
-					fmt.Fprintf(w, "\n\t%s\t%s", sub.Name, sub.ShortDesc)
-				}
-				fmt.Fprintf(w, "\n\n")
-				w.Flush()
-			} else {
-				if root == nil {
-					return fmt.Errorf("Root is not defined")
-				}
-				cmd, found := root.Subs[args[0]]
-				if !found {
-					return fmt.Errorf("Command %s is not recognized", args[0])
-				}
-				subHelp(cmd)
+			cmd, _ := root.CheckSubCommand("help")
+			if len(cmd.Values) == 0 {
+				return nil
 			}
+
+			sub := root
+			for _, cmdname := range cmd.Values {
+				s, e := sub.CheckSubCommand(cmdname)
+				if e != nil {
+					return e
+				}
+				sub = s
+			}
+
+			subHelp(sub)
+			cmd.Values = nil
 			return nil
 		},
 	}
 
-	return help
+	return helpcmd
 }
 
-// HACK: this should be a recursive function
-// Handles help function for sub commands of the root command
+// subHelp is helper to print a [Command] information to the screen
 func subHelp(cmd *Command) {
 	fmt.Print("\n")
 	fmt.Printf("%s\n", strings.ToUpper(string(cmd.Name[0]))+cmd.Name[1:])
@@ -65,7 +57,7 @@ func subHelp(cmd *Command) {
 	fmt.Fprintf(w, "%v", text.Bold("Flags:"))
 
 	if cmd.Subs != nil {
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		fmt.Fprintf(w, "\n%v", text.Bold("Commands"))
 		for _, sub := range cmd.Subs {
 			fmt.Fprintf(w, "\n\t%s\t%s", sub.Name, sub.ShortDesc)

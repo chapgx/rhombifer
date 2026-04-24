@@ -18,9 +18,6 @@ func (t *Token) Equals(x *Token) bool {
 	return t.Literal == x.Literal && t.Type == x.Type
 }
 
-// NOTE: I wonder if i can encode string against int type in the token type or should I just let the user
-// handle this
-
 const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"

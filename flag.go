@@ -22,10 +22,6 @@ type Flag struct {
 	// May remove this and add a require flags to the command itself
 	Required bool
 
-	// todo: not sure if to keep it
-	// to define how the values would be parse
-	ValuesDilimiter []string
-
 	// Does this flag requires a value
 	RequiresValue bool
 
@@ -34,8 +30,13 @@ type Flag struct {
 
 	// Flag values parsed from the current command being run
 	Values []string
+
+	Command *Command
+
+	Run Run
 }
 
+// AddValues add values to the flag
 func (f *Flag) AddValues(args ...string) error {
 	if f.RequiresValue && len(args) <= 0 {
 		return fmt.Errorf("flag requires values but got 0")
@@ -50,25 +51,54 @@ func (f *Flag) AddValues(args ...string) error {
 	return nil
 }
 
-// Returns the short and long format name for the flag
+// GetNames returns the short and long format name for the flag
 func (f *Flag) GetNames() (short, long string) {
 	return f.ShortFormat, f.Name
 }
 
-// Grabs the first value of the flag
+// GetSingleValue returns the first value of the flag
 func (f Flag) GetSingleValue() (string, error) {
 	if f.Values == nil {
 		return "", ErrNilValues
 	}
 
-	if len(f.Values) < 0 {
+	if len(f.Values) == 0 {
 		return "", ErrNoValues
 	}
 
 	return f.Values[0], nil
 }
 
-// TODO: add a validation function for type maybe
+// SetRequired sets the flag to require and returns a pointer to instance f
+func (f *Flag) SetRequired() *Flag {
+	f.Required = true
+	return f
+}
+
+// Exec sets a run function if any and returns a pointer to instane f
+func (f *Flag) Exec(fn Run) *Flag {
+	f.Run = fn
+	return f
+}
+
+// SetShortFormat sets the short format for the flag
+func (f *Flag) SetShortFormat(sf string) *Flag {
+	f.ShortFormat = sf
+	return f
+}
+
+// SetValuesRequired sets the values to required for the flag
+func (f *Flag) SetValuesRequired() *Flag {
+	f.RequiresValue = true
+	return f
+}
+
+// NewFlag is a short hand for when you really only need flag present and
+// the description
+func NewFlag(name, shortdesc string) *Flag {
+	return &Flag{Name: name, Short: shortdesc}
+}
+
 var (
 	ErrNoValues  = errors.New("no values found on flag")
 	ErrNilValues = errors.New("values is <nil>")

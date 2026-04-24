@@ -38,6 +38,9 @@ type Command struct {
 	Leaf bool
 
 	Values []string
+
+	Outputs map[string]any // any computed outputs from the command can be stored here
+	Parent  *Command
 }
 
 // AddFlags adds a flag to the a command
@@ -53,6 +56,7 @@ func (cmd *Command) AddFlags(flags ...*Flag) {
 			f.Values = make([]string, 0)
 		}
 		cmd.Flags = append(cmd.Flags, f)
+		f.Command = cmd
 		tokens.RegisterFlag(f.Name)
 	}
 }
@@ -65,6 +69,7 @@ func (cmd *Command) AddSubs(subs ...*Command) {
 		}
 		for _, s := range subs {
 			cmd.Subs[s.Name] = s
+			s.Parent = cmd
 			tokens.RegisterCommand(s.Name)
 		}
 	}
@@ -81,7 +86,7 @@ func (cmd *Command) ValidateRequiredFlags(args []string) bool {
 		return false
 	}
 
-	var missing bool = false
+	missing := false
 	joinArgs := strings.Join(args, " ")
 	for _, f := range cmd.requiredFlags {
 		if !strings.Contains(joinArgs, "--"+f.Name) && !strings.Contains(joinArgs, "-"+f.ShortFormat) {

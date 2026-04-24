@@ -24,9 +24,8 @@ func Start() error {
 	args := os.Args[1:]
 
 	if len(args) == 0 && config.RunHelpIfNoInput {
-		helpcmd, e := root.CheckSubCommand("help")
-		if e != nil {
-			return e
+		if helpcmd == nil {
+			return fmt.Errorf("help command is nil")
 		}
 		return helpcmd.Run()
 	}
@@ -38,64 +37,46 @@ func Start() error {
 
 	astroot := program.Root
 
+	current_cmd := root
+outer:
 	for _, node := range astroot {
 		switch entity := node.(type) {
 		case *ast.Command:
-			e := command_path(entity, args)
-			return e
-		case *ast.Flag:
-			e := flag_path(root, entity)
+			c, e := current_cmd.CheckSubCommand(entity.Name)
 			if e != nil {
 				return e
+			}
+
+			if c == helpcmd {
+				// HACK: we will dig through subcommands here but i think
+				// this should be hanlde better in the parsing state
+				subcommand_node := entity.SubCommand
+				for subcommand_node != nil {
+					subcommand := subcommand_node.(*ast.Command)
+					helpcmd.Values = append(helpcmd.Values, subcommand.Name)
+					subcommand_node = subcommand.SubCommand
+				}
+				// NOTE: could check for flags here and maybe print a more targeted help snippet
+				current_cmd = helpcmd
+				break outer
+			}
+
+			current_cmd = c
+		case *ast.Flag:
+			flag := current_cmd.CheckForFlag(entity.Name)
+			if flag == nil {
+				return fmt.Errorf("flag %s was not found in command %s", entity.Name, current_cmd.Name)
+			}
+
+			if !flag.RequiresValue {
+				current_cmd.Values = append(current_cmd.Values, entity.Value...)
+			} else {
+				flag.Values = append(flag.Values, entity.Value...)
 			}
 		case *ast.Value:
-			root.Values = append(root.Values, entity.Content)
+			current_cmd.Values = append(root.Values, entity.Content)
 		}
 	}
 
-	return root.Run(args...)
-}
-
-func command_path(cmd *ast.Command, rawinput []string) error {
-	sub, e := root.CheckSubCommand(cmd.Name)
-	if e != nil {
-		return e
-	}
-
-	if cmd.SubCommand != nil {
-		astcommand := cmd.SubCommand.(*ast.Command)
-		for {
-			s, e := sub.CheckSubCommand(astcommand.Name)
-			if e != nil {
-				return e
-			}
-			sub = s
-
-			if astcommand.SubCommand == nil {
-				break
-			}
-			astcommand = astcommand.SubCommand.(*ast.Command)
-		}
-	}
-
-	// note: checks for flags and add values from the ast to the actual flag
-	for _, astf := range cmd.Flags {
-		flag := sub.CheckForFlag(astf.Name)
-		if flag == nil {
-			return fmt.Errorf("expected to find flag %s got nil", astf.Name)
-		}
-		flag.Values = append(flag.Values, astf.Value...)
-		foundflags = append(foundflags, flag)
-	}
-
-	return sub.Run(rawinput...)
-}
-
-func flag_path(cmd *Command, flag *ast.Flag) error {
-	f := cmd.CheckForFlag(flag.Name)
-	if f == nil {
-		return fmt.Errorf("flag %s was not found", flag.Name)
-	}
-	foundflags = append(foundflags, f)
-	return nil
+	return current_cmd.Run(args...)
 }
