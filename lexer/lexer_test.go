@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/chapgx/rhombifer/tokens"
@@ -8,6 +9,7 @@ import (
 
 func TestLexer(t *testing.T) {
 	t.Run("full input", func(t *testing.T) {
+		tokens.RegisterCommand("run")
 		input := `run --foo --bar "hello world" -fg`
 		l := New(input)
 
@@ -29,6 +31,7 @@ func TestLexer(t *testing.T) {
 
 		for _, expected := range expectedtokens {
 			got := l.NextToken()
+			// fmt.Println(got)
 
 			if !are_tokens_equal(expected, got) {
 				t.Fatalf("\nexpected: %+v\n\ngot: %+v\n\n", expected, got)
@@ -50,6 +53,7 @@ func TestLexer(t *testing.T) {
 
 		for _, expected := range expectedtokens {
 			got := l.NextToken()
+			fmt.Println(got)
 
 			if !are_tokens_equal(expected, got) {
 				t.Fatalf("\nexpected: %+v\n\ngot: %+v\n\n", expected, got)

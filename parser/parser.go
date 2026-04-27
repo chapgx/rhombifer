@@ -51,6 +51,59 @@ func (p *Parser) parse_ident() ast.Node {
 	return command
 }
 
+func (p *Parser) parse_command() ast.Node {
+	if p.isprevtoken(tokens.QUOTE) && p.isnexttoken(tokens.QUOTE) {
+		p.currToken.Type = tokens.VALUE
+		return &ast.Value{Token: p.currToken, Content: p.currToken.Literal}
+	}
+
+	command := &ast.Command{Token: p.currToken, Name: p.currToken.Literal}
+
+	p.nexttoken()
+	current_command := command
+	for p.currToken.Type != tokens.EOF {
+		switch p.currToken.Type {
+		case tokens.IDENT:
+			p.currToken.Type = tokens.VALUE
+			value := ast.Value{Token: p.currToken, Content: p.currToken.Literal}
+			current_command.Values = append(current_command.Values, value)
+		case tokens.DASH:
+			flags := p.parse_dash()
+			current_command.Flags = append(current_command.Flags, flags...)
+			if p.currToken.Type == tokens.DASH {
+				continue
+			}
+		case tokens.QUOTE:
+			if !p.isnexttoken(tokens.IDENT) && !p.isnexttoken(tokens.COMMAND) {
+				panic(fmt.Sprintf("expected an identifer or command to follow but got a %+v\n", p.nextToken))
+			}
+			p.nexttoken()
+			p.currToken.Type = tokens.VALUE
+			if !p.isnexttoken(tokens.QUOTE) {
+				panic(fmt.Sprintf("expected a closing quote got a %+v\n", p.nextToken))
+			}
+			value := ast.Value{Token: p.currToken, Content: p.currToken.Literal}
+			current_command.Values = append(current_command.Values, value)
+			p.nexttoken()
+		case tokens.COMMAND:
+			node := p.parse_command()
+			switch ent := node.(type) {
+			case *ast.Value:
+				current_command.Values = append(command.Values, *ent)
+			case *ast.Command:
+				current_command.SubCommand = ent
+				current_command = current_command.SubCommand
+				// NOTE: this one is really uncessary it should alwasy return a command or a value
+			case *ast.Flag:
+				current_command.Flags = append(current_command.Flags, *ent)
+			}
+		}
+		p.nexttoken()
+	}
+
+	return command
+}
+
 func (p *Parser) parse_quote() ast.Value {
 	value := ast.Value{
 		Token: tokens.Token{Type: tokens.VALUE},
@@ -94,7 +147,7 @@ func (p *Parser) parse_flag() ast.Flag {
 	flag.Name = p.currToken.Literal
 	p.nexttoken()
 
-	for p.currToken.Type == tokens.IDENT || p.currToken.Type == tokens.QUOTE {
+	for p.currToken.Type != tokens.DASH && p.currToken.Type != tokens.EOF {
 		// note: if it is a quote we parse the quote
 		if p.currToken.Type == tokens.QUOTE {
 			quote := p.parse_quote()
@@ -119,6 +172,10 @@ func (p *Parser) nexttoken() {
 
 func (p *Parser) isnexttoken(t tokens.Type) bool {
 	return p.nextToken.Type == t
+}
+
+func (p *Parser) isprevtoken(t tokens.Type) bool {
+	return p.prevToken.Type == t
 }
 
 func (p *Parser) parse_short_flags() []ast.Flag {
@@ -146,14 +203,31 @@ func (p *Parser) parse_dash() []ast.Flag {
 		return []ast.Flag{flag}
 	}
 
-	if !p.isnexttoken(tokens.IDENT) {
-		panic("expected an identifier got something else")
+	if !p.isnexttoken(tokens.IDENT) && !p.isnexttoken(tokens.QUOTE) && !p.isnexttoken(tokens.EOF) {
+		panic(fmt.Sprintf("expected an identifier, quote, or a EOF token got %+v\n", p.nextToken))
 	}
 
 	p.nexttoken()
-	flag := p.parse_short_flags()
+	flags := p.parse_short_flags()
 	p.nexttoken()
-	return flag
+
+	// NOTE: values are added to the last flag and lifted by the command
+	// if the flag does not allow values
+	lastflag := &flags[len(flags)-1]
+
+	for p.currToken.Type != tokens.DASH && p.currToken.Type != tokens.EOF {
+		switch p.currToken.Type {
+		case tokens.QUOTE:
+			value := p.parse_quote()
+			lastflag.Value = append(lastflag.Value, value.Content)
+		case tokens.IDENT:
+			p.currToken.Type = tokens.VALUE
+			lastflag.Value = append(lastflag.Value, p.currToken.Literal)
+		}
+		p.nexttoken()
+	}
+
+	return flags
 }
 
 func (p *Parser) Parse() ast.Program {
@@ -174,6 +248,8 @@ outer:
 				prog.Root = append(prog.Root, &f)
 			}
 			continue outer
+		case tokens.COMMAND:
+			node = p.parse_command()
 		case tokens.QUOTE:
 			val := p.parse_quote()
 			node = &val

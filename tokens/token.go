@@ -19,19 +19,26 @@ func (t *Token) Equals(x *Token) bool {
 }
 
 const (
-	ILLEGAL = "ILLEGAL"
-	EOF     = "EOF"
-	DASH    = "-"
-	IDENT   = "IDENT" // values
-	QUOTE   = "\""
-	VALUE   = "VALUE"
-	COMMAND = "COMMAND"
-	FLAG    = "FLAG"
+	ILLEGAL  = "ILLEGAL"
+	EOF      = "EOF"
+	DASH     = "-"
+	IDENT    = "IDENT" // values
+	QUOTE    = "\""
+	VALUE    = "VALUE"
+	COMMAND  = "COMMAND"
+	FLAG     = "FLAG"
+	HELP_CMD = "HELP_CMD"
+	// TODO:(richard) the idea is that if the user is using the builtin in help command
+	// we treat that command keyword as special and the parser should enforce a special
+	// parsing of this statement
 )
 
 // TokenFromIdent takes an ident and resolves it to a keyword token if any
 // otherwise it returns an identifier token
 func TokenFromIdent(ident string) Token {
+	if IsTokenCommand(ident) {
+		return Token{COMMAND, ident}
+	}
 	return Token{IDENT, ident}
 }
 

@@ -58,7 +58,7 @@ func (l *Lexer) NextToken() tokens.Token {
 	return tok
 }
 
-// readIdentifier reads and identifier
+// readIdentifier reads an identifier
 func (l *Lexer) readIdentifier() string {
 	position := l.position
 	for isLetter(l.char) {

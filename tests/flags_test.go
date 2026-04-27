@@ -11,12 +11,12 @@ func TestFlags(t *testing.T) {
 	r := rhombifer.Root()
 	cmd := &rhombifer.Command{Name: "cmd", ShortDesc: "im a command", Run: func(args ...string) error { return nil }}
 	cmd.AddFlags(
-		rhombifer.NewFlag("foo", "im foo").SetRequired().SetShortFormat("f"),
+		rhombifer.NewFlag("fiji", "im foo").SetRequired().SetShortFormat("f"),
 		rhombifer.NewFlag("bar", "im bar").SetShortFormat("b").SetValuesRequired(),
 	)
 	r.AddSubs(cmd)
 
-	os.Args = []string{"programanme", "cmd", "--foo", "hello", "world"}
+	os.Args = []string{"programanme", "cmd", "--fiji", "hello", "world"}
 
 	e := rhombifer.Start()
 	if e != nil {
@@ -59,7 +59,6 @@ func TestFlags(t *testing.T) {
 
 	// values should be kept in the flag if it requires it
 	for idx, expectedval := range expectedvalues {
-		// BUG: breaks here  this is probably a parser error where short flags do not get values assign
 		got := barflag.Values[idx]
 		if got != expectedval {
 			t.Fatalf("expected %q got %q", expectedval, got)

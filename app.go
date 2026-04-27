@@ -61,6 +61,32 @@ outer:
 			}
 
 			current_cmd = c
+			for _, f := range entity.Flags {
+				flag := current_cmd.CheckForFlag(f.Name)
+				if flag == nil {
+					return fmt.Errorf("flag %s was not found in command %s", f.Name, current_cmd.Name)
+				}
+
+				if !flag.RequiresValue {
+					current_cmd.Values = append(current_cmd.Values, f.Value...)
+				} else {
+					flag.Values = append(flag.Values, f.Value...)
+				}
+			}
+
+			for _, v := range entity.Values {
+				current_cmd.Values = append(current_cmd.Values, v.Content)
+			}
+
+			if entity.SubCommand != nil {
+				cmd, e := evaluate_command(current_cmd, entity.SubCommand)
+				if e != nil {
+					return e
+				}
+				current_cmd = cmd
+			}
+
+			continue
 		case *ast.Flag:
 			flag := current_cmd.CheckForFlag(entity.Name)
 			if flag == nil {
@@ -78,4 +104,35 @@ outer:
 	}
 
 	return current_cmd.Run(args...)
+}
+
+// evaluate_command recursivley evaluates astcmd against cmd
+func evaluate_command(cmd *Command, astcmd *ast.Command) (*Command, error) {
+	cmd, e := cmd.CheckSubCommand(astcmd.Name)
+	if e != nil {
+		return nil, fmt.Errorf("command %s was not found", astcmd.Name)
+	}
+
+	for _, f := range astcmd.Flags {
+		flag := cmd.CheckForFlag(f.Name)
+		if flag == nil {
+			return nil, fmt.Errorf("flag %s was not found in command %s", f.Name, cmd.Name)
+		}
+
+		if !flag.RequiresValue {
+			cmd.Values = append(cmd.Values, f.Value...)
+		} else {
+			flag.Values = append(flag.Values, f.Value...)
+		}
+	}
+
+	for _, v := range astcmd.Values {
+		cmd.Values = append(cmd.Values, v.Content)
+	}
+
+	if astcmd.SubCommand != nil {
+		return evaluate_command(cmd, astcmd.SubCommand)
+	}
+
+	return cmd, nil
 }
