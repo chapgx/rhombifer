@@ -6,6 +6,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/chapgx/rhombifer"
 	text "github.com/chapgx/rhombifer/pkg/text"
 )
 
@@ -23,6 +24,7 @@ func HelpCommand() *Command {
 		Run: func(args ...string) error {
 			cmd, _ := root.CheckSubCommand("help")
 			if len(cmd.Values) == 0 {
+				subHelp(Root())
 				return nil
 			}
 

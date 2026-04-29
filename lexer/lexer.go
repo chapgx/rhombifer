@@ -76,7 +76,7 @@ func (l *Lexer) skipWhiteSpace() {
 // isLetter checks if ch is a letter
 func isLetter(ch byte) bool {
 	// NOTE: this may need to grow
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '.' || ch == ',' || ch == ';' || ch == '-'
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '.' || ch == ',' || ch == ';' || ch == '-' || ch >= '0' && ch <= '9'
 }
 
 // peekchar looks at the next character in the input

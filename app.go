@@ -66,6 +66,7 @@ outer:
 				if flag == nil {
 					return fmt.Errorf("flag %s was not found in command %s", f.Name, current_cmd.Name)
 				}
+				foundflags = append(foundflags, flag)
 
 				if !flag.RequiresValue {
 					current_cmd.Values = append(current_cmd.Values, f.Value...)
@@ -92,6 +93,7 @@ outer:
 			if flag == nil {
 				return fmt.Errorf("flag %s was not found in command %s", entity.Name, current_cmd.Name)
 			}
+			foundflags = append(foundflags, flag)
 
 			if !flag.RequiresValue {
 				current_cmd.Values = append(current_cmd.Values, entity.Value...)
@@ -118,6 +120,7 @@ func evaluate_command(cmd *Command, astcmd *ast.Command) (*Command, error) {
 		if flag == nil {
 			return nil, fmt.Errorf("flag %s was not found in command %s", f.Name, cmd.Name)
 		}
+		foundflags = append(foundflags, flag)
 
 		if !flag.RequiresValue {
 			cmd.Values = append(cmd.Values, f.Value...)
