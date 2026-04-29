@@ -6,7 +6,6 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/chapgx/rhombifer"
 	text "github.com/chapgx/rhombifer/pkg/text"
 )
 
